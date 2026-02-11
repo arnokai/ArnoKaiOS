@@ -1,61 +1,98 @@
+const appsInfo = [
+  {
+    title: "Blockaway",
+    icon: "",
+    link: "",
+    description: "",
+  },
+];
+
 const template = document.getElementById("win");
 const icon = document.getElementById("icon");
 const apps = document.getElementById("apps");
 
-let desktop = document.getElementById("desktop");
+const desktop = document.getElementById("desktop");
 
 icon.onclick = () => {
-    createWindow("App", "https://blockaway.net/");
+  createWindow("App", "https://blockaway.net/");
 };
 
 function createWindow(title, url) {
+  const clone = template.content.cloneNode(true);
+  const appWindow = clone.querySelector(".window");
+  const titlebar = clone.querySelector(".titlebar");
+  const minBtn = clone.querySelector(".min");
+  const maxBtn = clone.querySelector(".max");
+  const closeBtn = clone.querySelector(".close");
+  const iframe = clone.querySelector(".content");
+  const titleEl = clone.querySelector(".app-title");
 
-    const clone = template.content.cloneNode(true);
-    const window = clone.querySelector(".window");
-    const minBtn = clone.querySelector(".min");
-    const maxBtn = clone.querySelector(".max");
-    const closeBtn = clone.querySelector(".close");
-    const iframe = clone.querySelector(".content");
-    const titleEl = clone.querySelector(".app-title");
+  titleEl.textContent = title;
+  iframe.src = url;
 
-    titleEl.textContent = title;
-    iframe.src = url;
+  let maximized = false;
 
-    let maximized = false;
+  appWindow.style.top = window.innerHeight / 2 - 200 + "px";
+  appWindow.style.left = window.innerWidth / 2 - 300 + "px";
 
-    window.style.top = "100px";
-    window.style.left = "200px"
+  const taskBtn = document.createElement("div");
+  taskBtn.className = "task-app active";
+  taskBtn.innerText = title;
+  apps.appendChild(taskBtn);
 
+  taskBtn.onclick = () => {
+    if (appWindow.style.display === "none") {
+      appWindow.style.display = "block";
+      taskBtn.classList.add("active");
+    } else {
+      appWindow.style.display = "none";
+      taskBtn.classList.remove("active");
+    }
+  };
 
-    const taskBtn = document.createElement("div");
-    taskBtn.className = "task-app active";
-    taskBtn.innerText = title;
-    apps.appendChild(taskBtn);
+  minBtn.onclick = () => {
+    appWindow.style.display = "none";
+    taskBtn.classList.remove("active");
+  };
 
-    taskBtn.onclick = () => {
-        if (window.style.display === "none") {
-            window.style.display = "block";
-            taskBtn.classList.add("active");
-        } else {
-            window.style.display = "none";
-            taskBtn.classList.remove("active");
-        }
-    };
+  maxBtn.onclick = () => {
+    maximized = !maximized;
+    appWindow.classList.toggle("maximized", maximized);
+  };
 
-    minBtn.onclick = () => {
-        window.style.display = "none";
-        taskBtn.classList.remove("active");
-    };
+  closeBtn.onclick = () => {
+    appWindow.remove();
+    taskBtn.remove();
+  };
 
-    maxBtn.onclick = () => {
-        maximized = !maximized;
-        window.classList.toggle("maximized", maximized);
-    };
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
 
-    closeBtn.onclick = () => {
-        window.remove();
-        taskBtn.remove();
-    };
+  titlebar.ondblclick = () => {
+    maximized = !maximized;
+    appWindow.classList.toggle("maximized", maximized);
+  };
+  titlebar.onmousedown = (e) => {
+    if (maximized) return;
+    isDragging = true;
+    offsetX = e.clientX - appWindow.offsetLeft;
+    offsetY = e.clientY - appWindow.offsetTop;
 
-    desktop.appendChild(clone);
+    document.body.style.cursor = "move";
+  };
+
+  document.onmousemove = (e) => {
+    if (!isDragging) return;
+
+    appWindow.style.left = e.clientX - offsetX + "px";
+    appWindow.style.top = e.clientY - offsetY + "px";
+  };
+
+  document.onmouseup = () => {
+    isDragging = false;
+    document.body.style.cursor = "default";
+  };
+
+  desktop.appendChild(clone);
 }
