@@ -6,6 +6,7 @@ const appsInfo = [
     description: "",
   },
 ];
+const appList = [{}]
 
 const template = document.getElementById("win");
 const icon = document.getElementById("icon");
@@ -16,7 +17,7 @@ const desktop = document.getElementById("desktop");
 icon.onclick = () => {
   createWindow("App", "https://blockaway.net/");
 };
-
+let isDragging = false;
 function createWindow(title, url) {
   const clone = template.content.cloneNode(true);
   const appWindow = clone.querySelector(".window");
@@ -63,9 +64,10 @@ function createWindow(title, url) {
   closeBtn.onclick = () => {
     appWindow.remove();
     taskBtn.remove();
+
   };
 
-  let isDragging = false;
+
   let offsetX = 0;
   let offsetY = 0;
 
@@ -73,26 +75,31 @@ function createWindow(title, url) {
     maximized = !maximized;
     appWindow.classList.toggle("maximized", maximized);
   };
-  titlebar.onmousedown = (e) => {
+  titlebar.onpointerdown = (e) => {
     if (maximized) return;
     isDragging = true;
     offsetX = e.clientX - appWindow.offsetLeft;
     offsetY = e.clientY - appWindow.offsetTop;
 
-    document.body.style.cursor = "move";
+    document.body.style.cursor = "grab";
   };
 
-  document.onmousemove = (e) => {
+  titlebar.onpointermove = (e) => {
     if (!isDragging) return;
 
     appWindow.style.left = e.clientX - offsetX + "px";
     appWindow.style.top = e.clientY - offsetY + "px";
   };
 
-  document.onmouseup = () => {
+  titlebar.onpointerup = () => {
+    isDragging = false;
+    document.body.style.cursor = "default";
+  };
+  document.onpointerup = () => {
     isDragging = false;
     document.body.style.cursor = "default";
   };
 
   desktop.appendChild(clone);
+  appList.push(clone);
 }
